@@ -91,6 +91,18 @@ DEFAULT_MODEL=auto  # Claude picks best model for each task (recommended)
 
   > **Tip:** Copy the JSON file you need, customise it, and point the corresponding `*_MODELS_CONFIG_PATH` environment variable to your version. This lets you enable or disable capabilities (JSON mode, function calling, temperature support, code generation) without editing Python.
 
+### MCP Client “Stuck” / Hanging Fix (stderr logging)
+
+Some MCP clients only read stdout for JSON-RPC and do not drain stderr. If the server writes verbose logs to stderr, the stderr pipe buffer can fill and the server can block on logging, which looks like tool calls are stuck.
+
+PAL logs to `logs/mcp_server.log` by default. To **also** mirror logs to stderr, explicitly opt in:
+
+```env
+PAL_MCP_LOG_TO_STDERR=true
+```
+
+If you see hangs in your client, ensure `PAL_MCP_LOG_TO_STDERR` is unset or `false`.
+
 ### Code Generation Capability
 
 **`allow_code_generation` Flag:**

@@ -1,0 +1,72 @@
+{
+  "_README": {
+    "description": "Model metadata for Z.ai when used via the Custom (OpenAI-compatible) provider.",
+    "usage": "Use this manifest when you want to restrict Z.ai usage to the GLM-4.7 family only.",
+    "example_env": [
+      "CUSTOM_API_URL=https://api.z.ai/api/paas/v4/",
+      "CUSTOM_API_KEY=your_zai_api_key_here",
+      "CUSTOM_MODELS_CONFIG_PATH=/absolute/path/to/conf/zai_models.json",
+      "CUSTOM_ALLOWED_MODELS=glm-4.7,glm-4.7-flash,glm-4.7-flashx"
+    ]
+  },
+  "models": [
+    {
+      "model_name": "glm-4.7",
+      "friendly_name": "Z.ai (GLM-4.7)",
+      "aliases": [
+        "zai",
+        "glm47"
+      ],
+      "intelligence_score": 16,
+      "description": "Z.ai flagship GLM-4.7 (OpenAI-compatible)",
+      "context_window": 200000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": false,
+      "supports_system_prompts": true,
+      "supports_streaming": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true
+    },
+    {
+      "model_name": "glm-4.7-flashx",
+      "friendly_name": "Z.ai (GLM-4.7-FlashX)",
+      "aliases": [
+        "flashx",
+        "glm47-flashx"
+      ],
+      "intelligence_score": 13,
+      "description": "Z.ai GLM-4.7-FlashX (OpenAI-compatible)",
+      "context_window": 200000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": false,
+      "supports_system_prompts": true,
+      "supports_streaming": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true
+    },
+    {
+      "model_name": "glm-4.7-flash",
+      "friendly_name": "Z.ai (GLM-4.7-Flash)",
+      "aliases": [
+        "flash",
+        "glm47-flash"
+      ],
+      "intelligence_score": 12,
+      "description": "Z.ai GLM-4.7-Flash (OpenAI-compatible)",
+      "context_window": 200000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": false,
+      "supports_system_prompts": true,
+      "supports_streaming": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": false,
+      "supports_temperature": true
+    }
+  ]
+}
+
