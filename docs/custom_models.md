@@ -46,6 +46,8 @@ PAL ships multiple registries:
 
 Copy whichever file you need into your project (or point the corresponding `*_MODELS_CONFIG_PATH` env var at your own copy) and edit it to advertise the models you want.
 
+When using consensus across multiple providers, avoid ambiguous aliases that overlap with native providers (for example `flash`). Prefer explicit canonical names like `glm-4.7-flash` and `gemini-2.5-flash`.
+
 ### OpenRouter Models (Cloud)
 
 The curated defaults in `conf/openrouter_models.json` include popular entries such as:
@@ -199,6 +201,12 @@ CUSTOM_MODEL_NAME=your-loaded-model
 # Local models (with custom URL configured):
 "Use local-llama to analyze this code"     # → llama3.2 (local)
 "Use local to debug this function"         # → llama3.2 (local)
+```
+
+**Z.ai / GLM example (Custom provider):**
+```
+"Use glm-4.7 via pal consensus to review this architecture"
+"Use glm-4.7-flashx for a faster second opinion"
 ```
 
 **Using full model names:**

@@ -105,6 +105,32 @@ class TestConsensusTool:
                 continuation_id="test-id",
             )
 
+    def test_rejects_ambiguous_model_aliases(self, monkeypatch):
+        """Consensus should reject ambiguous aliases and require canonical names."""
+        tool = ConsensusTool()
+
+        def fake_candidates(model_name):
+            if model_name == "flash":
+                return ["gemini-2.5-flash", "glm-4.7-flash"]
+            return [model_name]
+
+        monkeypatch.setattr(tool, "_get_model_resolution_candidates", fake_candidates)
+
+        with pytest.raises(ValueError, match="Ambiguous model alias 'flash'"):
+            tool._validate_model_alias_ambiguity(
+                [{"model": "flash", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}]
+            )
+
+    def test_accepts_canonical_glm_model(self, monkeypatch):
+        """Canonical GLM model names should pass ambiguity checks."""
+        tool = ConsensusTool()
+
+        monkeypatch.setattr(tool, "_get_model_resolution_candidates", lambda model_name: [model_name])
+
+        tool._validate_model_alias_ambiguity(
+            [{"model": "glm-4.7", "stance": "neutral"}, {"model": "o3-mini", "stance": "for"}]
+        )
+
     def test_input_schema_generation(self):
         """Test that input schema is generated correctly."""
         tool = ConsensusTool()

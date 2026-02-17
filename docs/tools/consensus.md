@@ -83,11 +83,21 @@ Get a consensus from gemini supporting the idea for implementing X, grok opposin
 
 ## Model Configuration Examples
 
+**Important:** When multiple providers define the same alias (for example `flash`), consensus requires explicit canonical model names to avoid ambiguous routing.
+
 **Basic For/Against:**
 ```json
 [
-    {"model": "flash", "stance": "for"},
+    {"model": "gemini-2.5-flash", "stance": "for"},
     {"model": "pro", "stance": "against"}
+]
+```
+
+**GLM Default Inclusion Example:**
+```json
+[
+    {"model": "glm-4.7", "stance": "neutral"},
+    {"model": "gpt-5.2", "stance": "against"}
 ]
 ```
 

@@ -283,6 +283,10 @@ of the evidence, even when it strongly points in one direction.""",
         if restriction_note and (remainder > 0 or not summaries):
             model_description = f"{model_description} {restriction_note}."
 
+        glm_default_hint = self._get_glm_default_hint()
+        if glm_default_hint:
+            model_description = f"{model_description} {glm_default_hint}"
+
         existing_models_desc = consensus_field_overrides["models"]["description"]
         consensus_field_overrides["models"]["description"] = f"{existing_models_desc} {model_description}"
 
@@ -314,6 +318,57 @@ of the evidence, even when it strongly points in one direction.""",
             excluded_common_fields=excluded_common_fields,
             require_model=requires_model,
         )
+
+    def _get_glm_default_hint(self) -> str:
+        """Return guidance to include GLM in consensus defaults when available."""
+        try:
+            from providers.registry import ModelProviderRegistry
+
+            available_models = ModelProviderRegistry.get_available_models(respect_restrictions=True)
+            has_glm = any(name.lower() == "glm-4.7" for name in available_models)
+            if has_glm:
+                return (
+                    "Default consensus roster guidance: when the user does not specify models, include "
+                    "`glm-4.7` as one of the consulted models."
+                )
+        except Exception:
+            return ""
+        return ""
+
+    def _get_model_resolution_candidates(self, model_name: str) -> list[str]:
+        """Return canonical model candidates across all active providers for a given identifier."""
+        from providers.registry import ModelProviderRegistry
+
+        candidates: set[str] = set()
+
+        for provider_type in ModelProviderRegistry.get_available_providers():
+            provider = ModelProviderRegistry.get_provider(provider_type)
+            if not provider:
+                continue
+
+            try:
+                if provider.validate_model_name(model_name):
+                    resolved = provider._resolve_model_name(model_name)
+                    if resolved:
+                        candidates.add(resolved)
+            except Exception:
+                continue
+
+        return sorted(candidates)
+
+    def _validate_model_alias_ambiguity(self, models: list[dict]) -> None:
+        """Reject ambiguous aliases so consensus routing remains explicit."""
+        for model_config in models:
+            model_name = str(model_config.get("model", "")).strip()
+            if not model_name:
+                continue
+
+            candidates = self._get_model_resolution_candidates(model_name)
+            if len(candidates) > 1:
+                raise ValueError(
+                    f"Ambiguous model alias '{model_name}' resolves to multiple candidates: {candidates}. "
+                    "Use an explicit canonical model name (for example `glm-4.7-flash` or `gemini-2.5-flash`)."
+                )
 
     def get_required_actions(
         self, step_number: int, confidence: str, findings: str, total_steps: int, request=None
@@ -457,6 +512,7 @@ of the evidence, even when it strongly points in one direction.""",
             # Store the original proposal from step 1 - this is what all models should see
             self.store_initial_issue(request.step)
             self.initial_request = request.step
+            self._validate_model_alias_ambiguity(request.models or [])
             self.models_to_consult = request.models or []
             self.accumulated_responses = []
             # Set total steps: len(models) (each step includes consultation + response)

@@ -17,7 +17,7 @@
         "zai",
         "glm47"
       ],
-      "intelligence_score": 16,
+      "intelligence_score": 18,
       "description": "Z.ai flagship GLM-4.7 (OpenAI-compatible)",
       "context_window": 200000,
       "max_output_tokens": 128000,
@@ -52,7 +52,6 @@
       "model_name": "glm-4.7-flash",
       "friendly_name": "Z.ai (GLM-4.7-Flash)",
       "aliases": [
-        "flash",
         "glm47-flash"
       ],
       "intelligence_score": 12,
@@ -69,4 +68,3 @@
     }
   ]
 }
-

@@ -16,9 +16,18 @@ def test_consensus_models_field_includes_available_models(monkeypatch):
         MethodType(lambda self, limit=5: (["gemini-2.5-pro (score 100, 1.0M ctx, thinking)"], 1, False), tool),
     )
     monkeypatch.setattr(tool, "_get_restriction_note", MethodType(lambda self: None, tool))
+    monkeypatch.setattr(
+        tool,
+        "_get_glm_default_hint",
+        MethodType(
+            lambda self: "Default consensus roster guidance: when the user does not specify models, include `glm-4.7` as one of the consulted models.",
+            tool,
+        ),
+    )
 
     schema = tool.get_input_schema()
     models_field_description = schema["properties"]["models"]["description"]
 
     assert "listmodels" in models_field_description
     assert "Top models" in models_field_description
+    assert "glm-4.7" in models_field_description
