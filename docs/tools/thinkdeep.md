@@ -26,6 +26,7 @@ with the best architecture for my project
 - **Image support**: Analyze architectural diagrams, flowcharts, design mockups: `"Think deeper about this system architecture diagram with gemini pro using max thinking mode"`
 - **Enhanced Critical Evaluation (v2.10.0)**: After Gemini's analysis, Claude is prompted to critically evaluate the suggestions, consider context and constraints, identify risks, and synthesize a final recommendation - ensuring a balanced, well-considered solution
 - **Web search capability**: Automatically identifies areas where current documentation or community solutions would strengthen the analysis and instructs Claude to perform targeted searches
+- **DeepThink-style reasoning (new)**: Builds a task-specific reasoning structure (SELF-DISCOVER inspired) and emits uncertainty-routing metadata (`majority_vote` vs `greedy`) to guide convergence strategy
 
 ## Tool Parameters
 
@@ -38,6 +39,10 @@ with the best architecture for my project
 - `temperature`: Temperature for creative thinking (0-1, default 0.7)
 - `thinking_mode`: minimal|low|medium|high|max (default: high, Gemini only)
 - `continuation_id`: Continue previous conversations
+- `deepthink_samples`: Number of sampled reasoning paths used for uncertainty-routing metadata (1-10, default: 3)
+- `confidence_threshold`: Threshold used for routing decision (0-1, default: 0.7)
+- `enable_self_discover`: Enable task-specific reasoning module planning (default: true)
+- `reasoning_modules_limit`: Maximum modules in generated reasoning plan (3-15, default: 7)
 
 ## Usage Examples
 

@@ -14,6 +14,9 @@ Key Features:
 """
 
 import logging
+import re
+from collections import Counter
+from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import Field
@@ -28,6 +31,72 @@ from tools.shared.base_models import WorkflowRequest
 from .workflow.base import WorkflowTool
 
 logger = logging.getLogger(__name__)
+
+
+# Lightweight adaptation of SELF-DISCOVER reasoning modules for engineering analysis.
+# This keeps the tool practical while surfacing an explicit reasoning plan.
+REASONING_MODULE_LIBRARY = [
+    {
+        "id": 1,
+        "name": "problem_decomposition",
+        "description": "Break the problem into smaller, testable sub-problems.",
+        "tags": {"decompose", "scope", "module", "subsystem", "boundary"},
+    },
+    {
+        "id": 2,
+        "name": "assumption_analysis",
+        "description": "Identify and verify assumptions behind the proposed approach.",
+        "tags": {"assumption", "constraint", "premise", "dependency"},
+    },
+    {
+        "id": 3,
+        "name": "critical_thinking",
+        "description": "Challenge the current approach and look for logical gaps.",
+        "tags": {"risk", "gap", "flaw", "tradeoff", "challenge"},
+    },
+    {
+        "id": 4,
+        "name": "systems_thinking",
+        "description": "Evaluate how changes affect neighboring components and flows.",
+        "tags": {"architecture", "integration", "system", "dependency", "coupling"},
+    },
+    {
+        "id": 5,
+        "name": "risk_analysis",
+        "description": "Assess reliability, safety, and failure-mode risks.",
+        "tags": {"risk", "failure", "security", "regression", "stability"},
+    },
+    {
+        "id": 6,
+        "name": "performance_analysis",
+        "description": "Analyze latency, throughput, memory, and scaling pressure.",
+        "tags": {"performance", "latency", "throughput", "memory", "scale"},
+    },
+    {
+        "id": 7,
+        "name": "verification_plan",
+        "description": "Define concrete validation criteria and acceptance checks.",
+        "tags": {"test", "validation", "verify", "assertion", "acceptance"},
+    },
+    {
+        "id": 8,
+        "name": "alternative_paths",
+        "description": "Generate alternative implementations and compare tradeoffs.",
+        "tags": {"alternative", "option", "tradeoff", "approach"},
+    },
+    {
+        "id": 9,
+        "name": "step_by_step_plan",
+        "description": "Produce a precise sequence of execution steps.",
+        "tags": {"plan", "step", "sequence", "implementation"},
+    },
+    {
+        "id": 10,
+        "name": "long_term_maintainability",
+        "description": "Evaluate operational burden and long-term maintainability.",
+        "tags": {"maintainability", "operational", "debt", "evolution"},
+    },
+]
 
 
 class ThinkDeepWorkflowRequest(WorkflowRequest):
@@ -92,6 +161,29 @@ class ThinkDeepWorkflowRequest(WorkflowRequest):
         default=None,
         description="Focus aspects (architecture, performance, security, etc.)",
     )
+    # DeepThink-style controls (adapted from optillm deepthink extension).
+    deepthink_samples: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Number of reasoning samples to simulate for uncertainty routing (1-10).",
+    )
+    confidence_threshold: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Threshold for uncertainty routing: high confidence -> majority_vote, else greedy.",
+    )
+    enable_self_discover: bool = Field(
+        default=True,
+        description="Enable SELF-DISCOVER-style reasoning structure generation.",
+    )
+    reasoning_modules_limit: int = Field(
+        default=7,
+        ge=3,
+        le=15,
+        description="Maximum reasoning modules to include in the generated reasoning plan.",
+    )
 
 
 class ThinkDeepTool(WorkflowTool):
@@ -148,6 +240,28 @@ class ThinkDeepTool(WorkflowTool):
                 "items": {"type": "string"},
                 "description": "Focus aspects (architecture, performance, security, etc.)",
             },
+            "deepthink_samples": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "DeepThink-style sample count for uncertainty routing metadata (1-10).",
+            },
+            "confidence_threshold": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "description": "Confidence threshold for routing decision (majority_vote vs greedy).",
+            },
+            "enable_self_discover": {
+                "type": "boolean",
+                "description": "Enable SELF-DISCOVER-style reasoning module planning.",
+            },
+            "reasoning_modules_limit": {
+                "type": "integer",
+                "minimum": 3,
+                "maximum": 15,
+                "description": "Maximum reasoning modules in the generated structure.",
+            },
         }
 
         # Use WorkflowSchemaBuilder with thinkdeep-specific tool fields
@@ -187,6 +301,7 @@ class ThinkDeepTool(WorkflowTool):
             self.stored_request_params["thinking_mode"] = request.thinking_mode
         except AttributeError:
             self.stored_request_params["thinking_mode"] = None
+        self.stored_request_params["deepthink_strategy"] = self._build_deepthink_strategy(request)
 
         # Add thinking-specific context to response
         response_data.update(
@@ -198,6 +313,7 @@ class ThinkDeepTool(WorkflowTool):
                     "relevant_files": len(request.relevant_files),
                     "thinking_confidence": request.confidence,
                     "analysis_focus": request.focus_areas or ["general"],
+                    "deepthink": self.stored_request_params["deepthink_strategy"],
                 }
             }
         )
@@ -214,6 +330,7 @@ class ThinkDeepTool(WorkflowTool):
                 "key_findings": self.consolidated_findings.findings,
                 "issues_identified": self.consolidated_findings.issues_found,
                 "files_analyzed": list(self.consolidated_findings.relevant_files),
+                "deepthink_strategy": self.stored_request_params.get("deepthink_strategy"),
             }
 
         # Add thinking-specific completion message based on confidence
@@ -228,6 +345,162 @@ class ThinkDeepTool(WorkflowTool):
             )
 
         return response_data
+
+    def _build_deepthink_strategy(self, request) -> dict[str, Any]:
+        """
+        Build an optillm-inspired DeepThink strategy:
+        - SELF-DISCOVER-like module selection and reasoning structure
+        - Uncertainty-routed decision metadata (majority_vote vs greedy)
+        """
+        enable_self_discover = bool(getattr(request, "enable_self_discover", True))
+        modules_limit = int(getattr(request, "reasoning_modules_limit", 7) or 7)
+        modules_limit = max(3, min(15, modules_limit))
+        samples = int(getattr(request, "deepthink_samples", 3) or 3)
+        samples = max(1, min(10, samples))
+        confidence_threshold = float(getattr(request, "confidence_threshold", 0.7) or 0.7)
+        confidence_threshold = max(0.0, min(1.0, confidence_threshold))
+
+        task_text = self._compose_task_text(request)
+        selected_modules = []
+        reasoning_structure = None
+        if enable_self_discover:
+            selected_modules = self._select_reasoning_modules(task_text, self._get_focus_areas(request), modules_limit)
+            reasoning_structure = self._build_reasoning_structure(task_text, selected_modules)
+
+        uncertainty = self._estimate_uncertainty_route(request, confidence_threshold)
+
+        return {
+            "enable_self_discover": enable_self_discover,
+            "deepthink_samples": samples,
+            "confidence_threshold": confidence_threshold,
+            "selected_modules": selected_modules,
+            "reasoning_structure": reasoning_structure,
+            "uncertainty_routing": uncertainty,
+        }
+
+    def _compose_task_text(self, request) -> str:
+        parts: list[str] = []
+        for field_name in ("step", "findings", "problem_context"):
+            value = getattr(request, field_name, None)
+            if value:
+                parts.append(str(value))
+        focus = self._get_focus_areas(request)
+        if focus:
+            parts.append(" ".join(focus))
+        return " ".join(parts).strip()
+
+    def _select_reasoning_modules(self, task_text: str, focus_areas: list[str], limit: int) -> list[dict[str, Any]]:
+        """
+        Heuristic SELF-DISCOVER adaptation.
+        Scores module relevance using request text and focus areas.
+        """
+        haystack = f"{task_text} {' '.join(focus_areas)}".lower()
+        tokens = {token for token in re.split(r"[^a-z0-9_]+", haystack) if token}
+        scored: list[tuple[int, dict[str, Any]]] = []
+
+        for module in REASONING_MODULE_LIBRARY:
+            score = 0
+            for tag in module["tags"]:
+                if tag in haystack or tag in tokens:
+                    score += 2
+            if module["name"] in haystack:
+                score += 3
+            scored.append((score, module))
+
+        scored.sort(key=lambda item: (-item[0], item[1]["id"]))
+        chosen = [module for score, module in scored if score > 0][:limit]
+
+        if not chosen:
+            default_names = {"problem_decomposition", "critical_thinking", "step_by_step_plan", "verification_plan"}
+            chosen = [m for m in REASONING_MODULE_LIBRARY if m["name"] in default_names][:limit]
+
+        return [
+            {
+                "id": module["id"],
+                "name": module["name"],
+                "description": module["description"],
+            }
+            for module in chosen
+        ]
+
+    def _build_reasoning_structure(self, task_text: str, modules: list[dict[str, Any]]) -> dict[str, Any]:
+        """
+        Convert selected modules into a concrete, execution-oriented reasoning plan.
+        """
+        execution_plan = []
+        for idx, module in enumerate(modules, start=1):
+            execution_plan.append(
+                {
+                    "step": idx,
+                    "module": module["name"],
+                    "objective": module["description"],
+                }
+            )
+
+        task_summary = task_text[:240] + ("..." if len(task_text) > 240 else "")
+        return {
+            "task_summary": task_summary or "General technical analysis task",
+            "selected_module_count": len(modules),
+            "execution_plan": execution_plan,
+            "output_contract": [
+                "State assumptions",
+                "Present evidence and tradeoffs",
+                "Identify risks and mitigations",
+                "Provide concrete next actions",
+            ],
+        }
+
+    def _estimate_uncertainty_route(self, request, threshold: float) -> dict[str, Any]:
+        """
+        Estimate confidence and route using an uncertainty-routed-CoT style policy.
+        """
+        confidence_map = {
+            "exploring": 0.25,
+            "low": 0.35,
+            "medium": 0.55,
+            "high": 0.72,
+            "very_high": 0.82,
+            "almost_certain": 0.90,
+            "certain": 0.97,
+        }
+        confidence_label = str(getattr(request, "confidence", "low") or "low")
+        score = confidence_map.get(confidence_label, 0.5)
+
+        findings_text = str(getattr(request, "findings", "") or "")
+        if len(findings_text) >= 200:
+            score += 0.05
+        if len(getattr(request, "relevant_context", []) or []) >= 2:
+            score += 0.05
+        if len(getattr(request, "relevant_files", []) or []) >= 2:
+            score += 0.03
+
+        # Penalize highly divergent context signals when available.
+        context_items = [str(item) for item in (getattr(request, "relevant_context", []) or []) if item]
+        if len(context_items) >= 2:
+            pairwise = []
+            lowered = [item.lower() for item in context_items]
+            for i, first in enumerate(lowered):
+                for second in lowered[i + 1 :]:
+                    pairwise.append(SequenceMatcher(None, first, second).ratio())
+            if pairwise:
+                avg_similarity = sum(pairwise) / len(pairwise)
+                if avg_similarity < 0.25:
+                    score -= 0.04
+
+        score = max(0.0, min(1.0, score))
+        routing_decision = "majority_vote" if score >= threshold else "greedy"
+        synthetic_answer_votes = max(1, min(int(getattr(request, "deepthink_samples", 3) or 3), 10))
+        vote_counter = Counter([routing_decision] * synthetic_answer_votes)
+
+        return {
+            "confidence_score": round(score, 3),
+            "routing_decision": routing_decision,
+            "routing_rationale": (
+                f"confidence_score {score:.3f} {'>=' if score >= threshold else '<'} "
+                f"threshold {threshold:.3f}"
+            ),
+            "synthetic_vote_distribution": dict(vote_counter),
+        }
 
     def should_skip_expert_analysis(self, request, consolidated_findings) -> bool:
         """
@@ -463,6 +736,15 @@ but also acknowledge strong insights and valid conclusions.
                 context_parts.append(
                     f"- {issue.get('severity', 'unknown')}: {issue.get('description', 'No description')}"
                 )
+
+        deepthink_strategy = self.stored_request_params.get("deepthink_strategy")
+        if deepthink_strategy:
+            context_parts.append("\nDEEPTHINK STRATEGY:")
+            context_parts.append(f"- routing: {deepthink_strategy['uncertainty_routing']['routing_decision']}")
+            context_parts.append(f"- score: {deepthink_strategy['uncertainty_routing']['confidence_score']}")
+            context_parts.append(
+                f"- selected_modules: {len(deepthink_strategy.get('selected_modules') or [])}"
+            )
 
         return "\n".join(context_parts)
 
