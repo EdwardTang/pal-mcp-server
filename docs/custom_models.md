@@ -206,7 +206,7 @@ CUSTOM_MODEL_NAME=your-loaded-model
 **Z.ai / GLM example (Custom provider):**
 ```
 "Use glm-4.7 via pal consensus to review this architecture"
-"Use glm-4.7-flashx for a faster second opinion"
+"Use glm-4.7-flash for a faster second opinion"
 ```
 
 **Using full model names:**

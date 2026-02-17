@@ -71,6 +71,32 @@ with the best architecture for my project
 "Think deeper about the security implications of this authentication code with pro"
 ```
 
+## Benchmarking (A/B)
+
+Use the local benchmark harness to compare baseline vs new DeepThink strategy settings:
+
+```bash
+source .pal_venv/bin/activate
+python scripts/benchmark_thinkdeep_ab.py --iterations 100
+```
+
+Commit-to-commit A/B (baseline ref vs candidate ref):
+
+```bash
+source .pal_venv/bin/activate
+python scripts/benchmark_thinkdeep_ab.py \
+  --commit-ab \
+  --baseline-ref HEAD~1 \
+  --candidate-ref WORKTREE \
+  --iterations 100
+```
+
+For smoke-level regression protection in future runs:
+
+```bash
+python communication_simulator_test.py --individual thinkdeep_ab_benchmark --verbose
+```
+
 ## Best Practices
 
 - **Provide detailed context**: Share your current thinking, constraints, and objectives

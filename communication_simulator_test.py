@@ -33,19 +33,21 @@ Available tests:
     openrouter_fallback         - OpenRouter fallback mechanism testing
     openrouter_models           - OpenRouter models availability testing
     token_allocation_validation - Token allocation and limits validation
+    thinkdeep_ab_benchmark    - ThinkDeep A/B benchmark smoke validation
     testgen_validation          - TestGen tool validation with specific test function
     refactor_validation         - Refactor tool validation with codesmells
     debug_validation            - Debug tool validation with actual bugs
     conversation_chain_validation - Conversation chain continuity validation
 
 Quick Test Mode (for time-limited testing):
-    Use --quick to run the essential 6 tests that provide maximum coverage:
+    Use --quick to run the essential 7 tests that provide maximum coverage:
     - cross_tool_continuation (cross-tool conversation memory)
     - basic_conversation (basic chat functionality)
     - content_validation (content validation and deduplication)
     - model_thinking_config (flash/flashlite model testing)
     - o3_model_selection (o3 model selection testing)
     - per_tool_deduplication (file deduplication for individual tools)
+    - thinkdeep_ab_benchmark (A/B effectiveness and latency sanity check for thinkdeep)
 
 Examples:
     # Run all tests
@@ -116,6 +118,7 @@ class CommunicationSimulator:
             "model_thinking_config",  # Flash/flashlite model testing
             "o3_model_selection",  # O3 model selection testing
             "per_tool_deduplication",  # File deduplication for individual tools
+            "thinkdeep_ab_benchmark",  # Deepthink A/B quality/latency sanity
         ]
 
         # If quick mode is enabled, override selected_tests

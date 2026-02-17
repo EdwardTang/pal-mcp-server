@@ -14,6 +14,7 @@ Key Features:
 """
 
 import logging
+import random
 import re
 from collections import Counter
 from difflib import SequenceMatcher
@@ -399,16 +400,17 @@ class ThinkDeepTool(WorkflowTool):
         scored: list[tuple[int, dict[str, Any]]] = []
 
         for module in REASONING_MODULE_LIBRARY:
+            all_tags = set(module["tags"])
+            all_tags.add(module["name"])
             score = 0
-            for tag in module["tags"]:
+            for tag in all_tags:
                 if tag in haystack or tag in tokens:
-                    score += 2
-            if module["name"] in haystack:
-                score += 3
-            scored.append((score, module))
+                    score += 1
+            if score > 0:
+                scored.append((score, module))
 
         scored.sort(key=lambda item: (-item[0], item[1]["id"]))
-        chosen = [module for score, module in scored if score > 0][:limit]
+        chosen = [module for score, module in scored][:limit]
 
         if not chosen:
             default_names = {"problem_decomposition", "critical_thinking", "step_by_step_plan", "verification_plan"}
@@ -478,7 +480,8 @@ class ThinkDeepTool(WorkflowTool):
         context_items = [str(item) for item in (getattr(request, "relevant_context", []) or []) if item]
         if len(context_items) >= 2:
             pairwise = []
-            lowered = [item.lower() for item in context_items]
+            bounded_items = context_items[:12]
+            lowered = [item.lower()[:500] for item in bounded_items]
             for i, first in enumerate(lowered):
                 for second in lowered[i + 1 :]:
                     pairwise.append(SequenceMatcher(None, first, second).ratio())
@@ -488,9 +491,22 @@ class ThinkDeepTool(WorkflowTool):
                     score -= 0.04
 
         score = max(0.0, min(1.0, score))
-        routing_decision = "majority_vote" if score >= threshold else "greedy"
         synthetic_answer_votes = max(1, min(int(getattr(request, "deepthink_samples", 3) or 3), 10))
-        vote_counter = Counter([routing_decision] * synthetic_answer_votes)
+        seed_material = "|".join(
+            [
+                confidence_label,
+                findings_text[:200],
+                f"{threshold:.3f}",
+                str(synthetic_answer_votes),
+            ]
+        )
+        rng = random.Random(seed_material)
+        sampled_decisions = []
+        for _ in range(synthetic_answer_votes):
+            sampled_score = max(0.0, min(1.0, score + rng.uniform(-0.08, 0.08)))
+            sampled_decisions.append("majority_vote" if sampled_score >= threshold else "greedy")
+        vote_counter = Counter(sampled_decisions)
+        routing_decision = vote_counter.most_common(1)[0][0]
 
         return {
             "confidence_score": round(score, 3),
@@ -500,6 +516,7 @@ class ThinkDeepTool(WorkflowTool):
                 f"threshold {threshold:.3f}"
             ),
             "synthetic_vote_distribution": dict(vote_counter),
+            "sampling_mode": "seeded_monte_carlo",
         }
 
     def should_skip_expert_analysis(self, request, consolidated_findings) -> bool:

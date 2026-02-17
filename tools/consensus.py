@@ -29,6 +29,7 @@ from mcp.types import TextContent
 from config import TEMPERATURE_ANALYTICAL
 from systemprompts import CONSENSUS_PROMPT
 from tools.shared.base_models import ConsolidatedFindings, WorkflowRequest
+from utils.env import get_env
 from utils.conversation_memory import MAX_CONVERSATION_TURNS, create_thread, get_thread
 
 from .workflow.base import WorkflowTool
@@ -142,6 +143,7 @@ class ConsensusTool(WorkflowTool):
         self.models_to_consult: list[dict] = []
         self.accumulated_responses: list[dict] = []
         self._current_arguments: dict[str, Any] = {}
+        self._model_resolution_cache: dict[str, tuple[str, ...]] = {}
 
     def get_name(self) -> str:
         return "consensus"
@@ -283,9 +285,9 @@ of the evidence, even when it strongly points in one direction.""",
         if restriction_note and (remainder > 0 or not summaries):
             model_description = f"{model_description} {restriction_note}."
 
-        glm_default_hint = self._get_glm_default_hint()
-        if glm_default_hint:
-            model_description = f"{model_description} {glm_default_hint}"
+        default_hint = self._get_default_consensus_hint()
+        if default_hint:
+            model_description = f"{model_description} {default_hint}"
 
         existing_models_desc = consensus_field_overrides["models"]["description"]
         consensus_field_overrides["models"]["description"] = f"{existing_models_desc} {model_description}"
@@ -319,27 +321,54 @@ of the evidence, even when it strongly points in one direction.""",
             require_model=requires_model,
         )
 
-    def _get_glm_default_hint(self) -> str:
-        """Return guidance to include GLM in consensus defaults when available."""
+    def _get_default_consensus_models(self) -> list[str]:
+        """Return configured default consensus models that are currently available."""
+        raw = (get_env("PAL_CONSENSUS_DEFAULT_MODELS", "") or "").strip()
+        if not raw:
+            return []
+
+        requested = [item.strip() for item in raw.split(",") if item.strip()]
+        if not requested:
+            return []
+
         try:
             from providers.registry import ModelProviderRegistry
 
             available_models = ModelProviderRegistry.get_available_models(respect_restrictions=True)
-            has_glm = any(name.lower() == "glm-4.7" for name in available_models)
-            if has_glm:
-                return (
-                    "Default consensus roster guidance: when the user does not specify models, include "
-                    "`glm-4.7` as one of the consulted models."
-                )
-        except Exception:
+        except Exception:  # pragma: no cover - defensive fallback for provider initialization edge cases
+            return []
+
+        available_lookup = {name.lower(): name for name in available_models}
+        resolved_defaults = [available_lookup[name.lower()] for name in requested if name.lower() in available_lookup]
+        return resolved_defaults
+
+    def _get_default_consensus_hint(self) -> str:
+        """Return schema hint for configured default consensus models."""
+        default_models = self._get_default_consensus_models()
+        if not default_models:
             return ""
-        return ""
+
+        formatted = ", ".join(f"`{model_name}`" for model_name in default_models)
+        return (
+            "Default consensus roster guidance: when the user does not specify models, include "
+            f"{formatted}."
+        )
 
     def _get_model_resolution_candidates(self, model_name: str) -> list[str]:
         """Return canonical model candidates across all active providers for a given identifier."""
         from providers.registry import ModelProviderRegistry
 
+        normalized_name = str(model_name or "").strip()
+        if not normalized_name:
+            return []
+        if len(normalized_name) > 128:
+            raise ValueError("Model identifier exceeds maximum supported length (128 characters).")
+
+        if normalized_name in self._model_resolution_cache:
+            return list(self._model_resolution_cache[normalized_name])
+
         candidates: set[str] = set()
+        provider_errors: list[str] = []
 
         for provider_type in ModelProviderRegistry.get_available_providers():
             provider = ModelProviderRegistry.get_provider(provider_type)
@@ -347,14 +376,33 @@ of the evidence, even when it strongly points in one direction.""",
                 continue
 
             try:
-                if provider.validate_model_name(model_name):
-                    resolved = provider._resolve_model_name(model_name)
-                    if resolved:
-                        candidates.add(resolved)
-            except Exception:
+                resolved = provider.resolve_model_name(normalized_name)
+            except ValueError:
                 continue
+            except Exception as exc:  # pragma: no cover - defensive logging path
+                provider_name = getattr(provider_type, "value", str(provider_type))
+                logger.warning(
+                    "Model alias validation failed for provider %s: %s",
+                    provider_name,
+                    exc,
+                )
+                provider_errors.append(provider_name)
+                continue
+            if resolved:
+                candidates.add(resolved)
 
-        return sorted(candidates)
+        if provider_errors:
+            raise ValueError(
+                "Unable to validate model alias due to provider resolution errors. "
+                "Use an explicit canonical model name."
+            )
+
+        if len(self._model_resolution_cache) >= 128:
+            self._model_resolution_cache.clear()
+        resolved_candidates = tuple(sorted(candidates))
+        self._model_resolution_cache[normalized_name] = resolved_candidates
+
+        return list(resolved_candidates)
 
     def _validate_model_alias_ambiguity(self, models: list[dict]) -> None:
         """Reject ambiguous aliases so consensus routing remains explicit."""
@@ -366,7 +414,7 @@ of the evidence, even when it strongly points in one direction.""",
             candidates = self._get_model_resolution_candidates(model_name)
             if len(candidates) > 1:
                 raise ValueError(
-                    f"Ambiguous model alias '{model_name}' resolves to multiple candidates: {candidates}. "
+                    f"Ambiguous model alias '{model_name}' resolves to multiple providers. "
                     "Use an explicit canonical model name (for example `glm-4.7-flash` or `gemini-2.5-flash`)."
                 )
 

@@ -37,6 +37,7 @@ from .test_prompt_size_limit_bug import PromptSizeLimitBugTest
 from .test_refactor_validation import RefactorValidationTest
 from .test_secaudit_validation import SecauditValidationTest
 from .test_testgen_validation import TestGenValidationTest
+from .test_thinkdeep_ab_benchmark import ThinkDeepABBenchmarkTest
 from .test_thinkdeep_validation import ThinkDeepWorkflowValidationTest
 from .test_token_allocation_validation import TokenAllocationValidationTest
 from .test_vision_capability import VisionCapabilityTest
@@ -64,6 +65,7 @@ TEST_REGISTRY = {
     "precommit_validation": PrecommitWorkflowValidationTest,
     "token_allocation_validation": TokenAllocationValidationTest,
     "testgen_validation": TestGenValidationTest,
+    "thinkdeep_ab_benchmark": ThinkDeepABBenchmarkTest,
     "thinkdeep_validation": ThinkDeepWorkflowValidationTest,
     "refactor_validation": RefactorValidationTest,
     "secaudit_validation": SecauditValidationTest,
@@ -102,6 +104,7 @@ __all__ = [
     "PrecommitWorkflowValidationTest",
     "TokenAllocationValidationTest",
     "TestGenValidationTest",
+    "ThinkDeepABBenchmarkTest",
     "ThinkDeepWorkflowValidationTest",
     "RefactorValidationTest",
     "SecauditValidationTest",

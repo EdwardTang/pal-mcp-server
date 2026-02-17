@@ -61,3 +61,27 @@ def test_uncertainty_routing_prefers_greedy_for_low_confidence():
 
     assert routing["routing_decision"] == "greedy"
     assert routing["confidence_score"] < 0.8
+
+
+def test_uncertainty_routing_applies_divergent_context_penalty():
+    tool = ThinkDeepTool()
+    base = _make_request(
+        confidence="medium",
+        confidence_threshold=0.99,
+        deepthink_samples=3,
+        relevant_context=["auth token flow", "auth token validation"],
+    )
+    divergent = _make_request(
+        confidence="medium",
+        confidence_threshold=0.99,
+        deepthink_samples=3,
+        relevant_context=[
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+        ],
+    )
+
+    base_score = tool._build_deepthink_strategy(base)["uncertainty_routing"]["confidence_score"]
+    divergent_score = tool._build_deepthink_strategy(divergent)["uncertainty_routing"]["confidence_score"]
+
+    assert round(base_score - divergent_score, 3) == 0.04

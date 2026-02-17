@@ -89,7 +89,7 @@ Get a consensus from gemini supporting the idea for implementing X, grok opposin
 ```json
 [
     {"model": "gemini-2.5-flash", "stance": "for"},
-    {"model": "pro", "stance": "against"}
+    {"model": "gemini-3-pro-preview", "stance": "against"}
 ]
 ```
 
@@ -105,17 +105,21 @@ Get a consensus from gemini supporting the idea for implementing X, grok opposin
 ```json
 [
     {"model": "o3", "stance": "for", "stance_prompt": "Focus on implementation benefits and user value"},
-    {"model": "flash", "stance": "against", "stance_prompt": "Identify potential risks and technical challenges"}
+    {"model": "gemini-2.5-flash", "stance": "against", "stance_prompt": "Identify potential risks and technical challenges"}
 ]
 ```
 
 **Neutral Analysis:**
 ```json
 [
-    {"model": "pro", "stance": "neutral"},
+    {"model": "gemini-3-pro-preview", "stance": "neutral"},
     {"model": "o3", "stance": "neutral"}
 ]
 ```
+
+**Configurable Default Roster Hint:**
+Set `PAL_CONSENSUS_DEFAULT_MODELS` (comma-separated canonical model names) to surface your preferred defaults in the consensus schema guidance, for example:
+`PAL_CONSENSUS_DEFAULT_MODELS=glm-4.7,gemini-3-pro-preview`.
 
 ## Usage Examples
 

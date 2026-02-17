@@ -18,7 +18,7 @@ def test_consensus_models_field_includes_available_models(monkeypatch):
     monkeypatch.setattr(tool, "_get_restriction_note", MethodType(lambda self: None, tool))
     monkeypatch.setattr(
         tool,
-        "_get_glm_default_hint",
+        "_get_default_consensus_hint",
         MethodType(
             lambda self: "Default consensus roster guidance: when the user does not specify models, include `glm-4.7` as one of the consulted models.",
             tool,

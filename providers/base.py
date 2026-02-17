@@ -401,6 +401,16 @@ class ModelProvider(ABC):
 
         raise ValueError(f"Unsupported model '{model_name}' for provider {self.get_provider_type().value}.")
 
+    def resolve_model_name(self, model_name: str) -> str:
+        """Resolve a requested model identifier to its canonical model name.
+
+        This is the public alias-resolution surface for callers outside provider
+        internals. It validates the model against provider capabilities and
+        restriction policy before returning.
+        """
+        capabilities = self.get_capabilities(model_name)
+        return capabilities.model_name
+
     def _resolve_model_name(self, model_name: str) -> str:
         """Resolve model shorthand to full name.
 
