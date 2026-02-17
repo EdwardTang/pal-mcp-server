@@ -34,13 +34,14 @@ Available tests:
     openrouter_models           - OpenRouter models availability testing
     token_allocation_validation - Token allocation and limits validation
     thinkdeep_ab_benchmark    - ThinkDeep A/B benchmark smoke validation
+    consensus_challenge_ab_benchmark - Consensus/Challenge A/B benchmark smoke validation
     testgen_validation          - TestGen tool validation with specific test function
     refactor_validation         - Refactor tool validation with codesmells
     debug_validation            - Debug tool validation with actual bugs
     conversation_chain_validation - Conversation chain continuity validation
 
 Quick Test Mode (for time-limited testing):
-    Use --quick to run the essential 7 tests that provide maximum coverage:
+    Use --quick to run the essential 8 tests that provide maximum coverage:
     - cross_tool_continuation (cross-tool conversation memory)
     - basic_conversation (basic chat functionality)
     - content_validation (content validation and deduplication)
@@ -48,6 +49,7 @@ Quick Test Mode (for time-limited testing):
     - o3_model_selection (o3 model selection testing)
     - per_tool_deduplication (file deduplication for individual tools)
     - thinkdeep_ab_benchmark (A/B effectiveness and latency sanity check for thinkdeep)
+    - consensus_challenge_ab_benchmark (A/B effectiveness and latency sanity for consensus/challenge)
 
 Examples:
     # Run all tests
@@ -59,7 +61,7 @@ Examples:
     # Run a single test individually (with full standalone setup)
     python communication_simulator_test.py --individual content_validation
 
-    # Run quick test mode (essential 6 tests for time-limited testing)
+    # Run quick test mode (essential 8 tests for time-limited testing)
     python communication_simulator_test.py --quick
 
     # Force setup standalone server environment before running tests
@@ -119,6 +121,7 @@ class CommunicationSimulator:
             "o3_model_selection",  # O3 model selection testing
             "per_tool_deduplication",  # File deduplication for individual tools
             "thinkdeep_ab_benchmark",  # Deepthink A/B quality/latency sanity
+            "consensus_challenge_ab_benchmark",  # Consensus/challenge A/B quality/latency sanity
         ]
 
         # If quick mode is enabled, override selected_tests

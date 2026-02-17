@@ -39,3 +39,11 @@ AI assistants sometimes tend to agree too readily. The challenge tool helps you:
 - Challenge assumptions constructively
 - Receive honest feedback on proposals
 - Validate approaches with thoughtful analysis
+
+## Benchmarking
+
+Challenge quality is included in the consensus/challenge A/B harness:
+
+```bash
+python scripts/benchmark_consensus_challenge_ab.py --iterations 100
+```

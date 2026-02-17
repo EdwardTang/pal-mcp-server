@@ -154,6 +154,18 @@ Set `PAL_CONSENSUS_DEFAULT_MODELS` (comma-separated canonical model names) to su
 - **Build on discussions**: Use continuation for follow-up analysis and refinement
 - **Leverage visual context**: Include diagrams, mockups, or design documents when relevant
 
+## Benchmarking
+
+Run commit A/B benchmark for consensus/challenge orchestration quality:
+
+```bash
+python scripts/benchmark_consensus_challenge_ab.py \
+  --commit-ab \
+  --baseline-ref HEAD~1 \
+  --candidate-ref WORKTREE \
+  --iterations 100
+```
+
 ## Ethical Guardrails
 
 The consensus tool includes built-in ethical safeguards:
