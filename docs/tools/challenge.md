@@ -3,6 +3,12 @@
 The `challenge` tool encourages thoughtful critical thinking instead of automatic agreement with the dreaded **You're absolutely right!** responses - especially 
 when you're not. This tool wraps your comment with instructions that prompt critical thinking and honest analysis instead of blind agreement.
 
+It now uses a multi-phase protocol inspired by multi-agent orchestration:
+1. Decompose claim and assumptions.
+2. Generate competing hypotheses.
+3. Stress-test with domain lenses (risk, evidence quality, performance/security/cost when relevant).
+4. Return verdict with confidence and decision-changing evidence.
+
 ## Quick Example
 
 ```

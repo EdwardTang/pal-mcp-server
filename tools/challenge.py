@@ -8,6 +8,7 @@ avoid reflexive agreement by prompting deeper analysis and genuine evaluation.
 This is a simple, self-contained tool that doesn't require AI model access.
 """
 
+import re
 from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import Field
@@ -123,12 +124,18 @@ class ChallengeTool(SimpleTool):
 
             # Wrap the prompt in challenge instructions
             wrapped_prompt = self._wrap_prompt_for_challenge(request.prompt)
+            selected_lenses = self._select_reasoning_lenses(request.prompt)
+            challenge_plan = self._build_challenge_plan(selected_lenses)
+            uncertainty_routing = self._build_uncertainty_routing_policy()
 
             # Return the wrapped prompt as the response
             response_data = {
                 "status": "challenge_accepted",
                 "original_statement": request.prompt,
                 "challenge_prompt": wrapped_prompt,
+                "selected_lenses": selected_lenses,
+                "challenge_plan": challenge_plan,
+                "uncertainty_routing": uncertainty_routing,
                 "instructions": (
                     "Present the challenge_prompt to yourself and follow its instructions. "
                     "Reassess the statement carefully and critically before responding. "
@@ -165,14 +172,70 @@ class ChallengeTool(SimpleTool):
         Returns:
             The statement wrapped in challenge instructions
         """
+        lenses = self._select_reasoning_lenses(prompt)
+        lens_text = ", ".join(lenses)
         return (
             f"CRITICAL REASSESSMENT – Do not automatically agree:\n\n"
             f'"{prompt}"\n\n'
-            f"Carefully evaluate the statement above. Is it accurate, complete, and well-reasoned? "
-            f"Investigate if needed before replying, and stay focused. If you identify flaws, gaps, or misleading "
-            f"points, explain them clearly. Likewise, if you find the reasoning sound, explain why it holds up. "
-            f"Respond with thoughtful analysis—stay to the point and avoid reflexive agreement."
+            f"Use this multi-phase protocol:\n"
+            f"1. Decompose the claim and list hidden assumptions.\n"
+            f"2. Generate at least two competing hypotheses (one supporting, one challenging).\n"
+            f"3. Evaluate evidence quality, risks, and missing information before deciding.\n"
+            f"4. Return a verdict with confidence (0.0-1.0) and what evidence would change your mind.\n\n"
+            f"Required reasoning lenses: {lens_text}.\n"
+            f"Respond with thoughtful analysis, stay concise, and avoid reflexive agreement."
         )
+
+    def _select_reasoning_lenses(self, prompt: str) -> list[str]:
+        """Select critique lenses using lightweight keyword routing."""
+        text = (prompt or "").lower()
+        lenses = [
+            "assumption_analysis",
+            "evidence_quality",
+            "alternative_hypotheses",
+            "risk_assessment",
+        ]
+        routing_rules = [
+            (r"\b(security|privacy|auth|token|secret|attack)\b", "safety_and_abuse"),
+            (r"\b(performance|latency|throughput|slow|optimi[sz]e)\b", "performance_tradeoffs"),
+            (r"\b(cost|budget|price|expensive)\b", "cost_impact"),
+            (r"\b(roadmap|timeline|deadline|delivery)\b", "execution_feasibility"),
+            (r"\b(data|metric|benchmark|measure)\b", "measurement_validity"),
+        ]
+        for pattern, lens in routing_rules:
+            if re.search(pattern, text):
+                lenses.append(lens)
+        return lenses
+
+    def _build_challenge_plan(self, lenses: list[str]) -> list[dict[str, str]]:
+        """Build deterministic challenge plan inspired by multi-agent orchestration."""
+        return [
+            {
+                "phase": "decompose_claim",
+                "goal": "Break statement into testable claims and assumptions.",
+            },
+            {
+                "phase": "generate_competing_hypotheses",
+                "goal": "Produce at least one supporting and one opposing explanation.",
+            },
+            {
+                "phase": "adversarial_validation",
+                "goal": f"Stress-test with lenses: {', '.join(lenses)}.",
+            },
+            {
+                "phase": "synthesize_verdict",
+                "goal": "Return verdict, confidence score, and decision-changing evidence.",
+            },
+        ]
+
+    def _build_uncertainty_routing_policy(self) -> dict[str, str]:
+        """Provide a confidence-based output policy."""
+        return {
+            "high_confidence_rule": "If confidence >= 0.7, provide a direct verdict first, then supporting evidence.",
+            "low_confidence_rule": (
+                "If confidence < 0.7, present both leading interpretations and list the minimum missing facts needed."
+            ),
+        }
 
     # Required method implementations from SimpleTool
 

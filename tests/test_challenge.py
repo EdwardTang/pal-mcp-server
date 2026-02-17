@@ -96,15 +96,18 @@ class TestChallengeTool:
         assert response_data["status"] == "challenge_accepted"
         assert response_data["original_statement"] == "All software bugs are caused by syntax errors"
         assert "challenge_prompt" in response_data
+        assert "selected_lenses" in response_data
+        assert "challenge_plan" in response_data
+        assert "uncertainty_routing" in response_data
         assert "instructions" in response_data
 
         # Check that the challenge prompt contains critical thinking instructions
         challenge_prompt = response_data["challenge_prompt"]
         assert "CRITICAL REASSESSMENT – Do not automatically agree" in challenge_prompt
-        assert "Carefully evaluate the statement above" in challenge_prompt
+        assert "Use this multi-phase protocol" in challenge_prompt
         assert response_data["original_statement"] in challenge_prompt
-        assert "flaws, gaps, or misleading points" in challenge_prompt
-        assert "thoughtful analysis" in challenge_prompt
+        assert "confidence (0.0-1.0)" in challenge_prompt
+        assert "Required reasoning lenses" in challenge_prompt
 
     @pytest.mark.asyncio
     async def test_execute_error_handling(self):
@@ -125,10 +128,10 @@ class TestChallengeTool:
 
         # Check structure
         assert "CRITICAL REASSESSMENT – Do not automatically agree" in wrapped
-        assert "Carefully evaluate the statement above" in wrapped
+        assert "Use this multi-phase protocol" in wrapped
         assert f'"{original_prompt}"' in wrapped
-        assert "flaws, gaps, or misleading points" in wrapped
-        assert "thoughtful analysis" in wrapped
+        assert "Generate at least two competing hypotheses" in wrapped
+        assert "Required reasoning lenses" in wrapped
 
     def test_multiple_prompts(self):
         """Test that tool handles various types of prompts correctly"""
@@ -147,6 +150,15 @@ class TestChallengeTool:
             # Each wrapped prompt should contain the original
             assert prompt in wrapped
             assert "CRITICAL REASSESSMENT" in wrapped
+
+    def test_select_reasoning_lenses(self):
+        """Routing should add domain-specific lenses when keywords are present."""
+        lenses = self.tool._select_reasoning_lenses("This auth design may hurt latency and cost; benchmark with data.")
+        assert "assumption_analysis" in lenses
+        assert "safety_and_abuse" in lenses
+        assert "performance_tradeoffs" in lenses
+        assert "cost_impact" in lenses
+        assert "measurement_validity" in lenses
 
     def test_tool_fields(self):
         """Test tool-specific field definitions"""

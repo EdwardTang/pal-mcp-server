@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+from collections import Counter
 from typing import TYPE_CHECKING, Any
 
 from pydantic import Field, model_validator
@@ -144,6 +146,7 @@ class ConsensusTool(WorkflowTool):
         self.accumulated_responses: list[dict] = []
         self._current_arguments: dict[str, Any] = {}
         self._model_resolution_cache: dict[str, tuple[str, ...]] = {}
+        self._consensus_confidence_threshold = 0.67
 
     def get_name(self) -> str:
         return "consensus"
@@ -349,10 +352,7 @@ of the evidence, even when it strongly points in one direction.""",
             return ""
 
         formatted = ", ".join(f"`{model_name}`" for model_name in default_models)
-        return (
-            "Default consensus roster guidance: when the user does not specify models, include "
-            f"{formatted}."
-        )
+        return "Default consensus roster guidance: when the user does not specify models, include " f"{formatted}."
 
     def _get_model_resolution_candidates(self, model_name: str) -> list[str]:
         """Return canonical model candidates across all active providers for a given identifier."""
@@ -582,6 +582,7 @@ of the evidence, even when it strongly points in one direction.""",
 
                 # Add to accumulated responses
                 self.accumulated_responses.append(model_response)
+                consensus_signal = self._build_consensus_signal(self.accumulated_responses)
 
                 # Include the model response in the step data
                 response_data = {
@@ -591,6 +592,7 @@ of the evidence, even when it strongly points in one direction.""",
                     "model_consulted": model_response["model"],
                     "model_stance": model_response.get("stance", "neutral"),
                     "model_response": model_response,
+                    "consensus_signal": consensus_signal,
                     "current_model_index": model_idx + 1,
                     "next_step_required": request.step_number < request.total_steps,
                 }
@@ -613,7 +615,8 @@ of the evidence, even when it strongly points in one direction.""",
                             f"{m['model']}:{m.get('stance', 'neutral')}" for m in self.accumulated_responses
                         ],
                         "total_responses": len(self.accumulated_responses),
-                        "consensus_confidence": "high",
+                        "consensus_confidence": consensus_signal["confidence_label"],
+                        "orchestration": consensus_signal,
                     }
                     response_data["next_steps"] = (
                         "CONSENSUS GATHERING IS COMPLETE. Synthesize all perspectives and present:\n"
@@ -733,6 +736,7 @@ of the evidence, even when it strongly points in one direction.""",
                 "stance": stance,
                 "status": "success",
                 "verdict": response.content,
+                "derived_position": self._infer_position(response.content, stance),
                 "metadata": {
                     "provider": provider.get_provider_type().value,
                     "model_name": model_name,
@@ -746,7 +750,86 @@ of the evidence, even when it strongly points in one direction.""",
                 "stance": model_config.get("stance", "neutral"),
                 "status": "error",
                 "error": str(e),
+                "derived_position": "inconclusive",
             }
+
+    def _infer_position(self, verdict: str, declared_stance: str) -> str:
+        """Infer model position from verdict text for consensus scoring."""
+        text = (verdict or "").strip().lower()
+        if not text:
+            return "inconclusive"
+
+        support_patterns = [
+            r"\b(recommend|should|best|prefer|approve|support)\b",
+            r"\b(strongly|clearly)\s+(support|recommend)\b",
+        ]
+        oppose_patterns = [
+            r"\b(do not|don't|should not|avoid|reject|oppose)\b",
+            r"\b(risky|unsafe|harmful|not recommended)\b",
+        ]
+
+        support_hits = sum(1 for pattern in support_patterns if re.search(pattern, text))
+        oppose_hits = sum(1 for pattern in oppose_patterns if re.search(pattern, text))
+
+        if support_hits > oppose_hits:
+            return "support"
+        if oppose_hits > support_hits:
+            return "oppose"
+
+        # Tie-break from declared stance to keep behavior deterministic.
+        if declared_stance == "for":
+            return "support"
+        if declared_stance == "against":
+            return "oppose"
+        return "inconclusive"
+
+    def _build_consensus_signal(self, model_responses: list[dict]) -> dict[str, Any]:
+        """
+        Build orchestration signal inspired by multi-agent routing:
+        - high agreement -> majority synthesis
+        - low agreement -> dialectical synthesis
+        """
+        successful = [entry for entry in model_responses if entry.get("status") == "success"]
+        if not successful:
+            return {
+                "confidence_score": 0.0,
+                "confidence_label": "low",
+                "agreement_ratio": 0.0,
+                "position_distribution": {},
+                "routing_decision": "dialectical_synthesis",
+                "recommended_synthesis_focus": "Collect at least one successful model response before synthesis.",
+            }
+
+        position_counts = Counter(entry.get("derived_position", "inconclusive") for entry in successful)
+        top_position_count = position_counts.most_common(1)[0][1]
+        total = len(successful)
+        agreement_ratio = top_position_count / total
+
+        # Penalize inconclusive outputs to avoid false confidence.
+        inconclusive_penalty = 0.15 if position_counts.get("inconclusive", 0) > 0 else 0.0
+        confidence_score = max(0.0, min(1.0, agreement_ratio - inconclusive_penalty))
+
+        if confidence_score >= self._consensus_confidence_threshold:
+            confidence_label = "high"
+            routing_decision = "majority_synthesis"
+            synthesis_focus = "Prioritize shared conclusions first, then include minority concerns as risk notes."
+        elif confidence_score >= 0.45:
+            confidence_label = "medium"
+            routing_decision = "balanced_synthesis"
+            synthesis_focus = "Present strongest agreement points and explicitly reconcile major disagreements."
+        else:
+            confidence_label = "low"
+            routing_decision = "dialectical_synthesis"
+            synthesis_focus = "Center synthesis on disagreement analysis, assumptions, and decision-critical unknowns."
+
+        return {
+            "confidence_score": round(confidence_score, 3),
+            "confidence_label": confidence_label,
+            "agreement_ratio": round(agreement_ratio, 3),
+            "position_distribution": dict(position_counts),
+            "routing_decision": routing_decision,
+            "recommended_synthesis_focus": synthesis_focus,
+        }
 
     def _get_stance_enhanced_prompt(self, stance: str, custom_stance_prompt: str | None = None) -> str:
         """Get the system prompt with stance injection."""

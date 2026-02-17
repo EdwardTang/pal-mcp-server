@@ -20,6 +20,7 @@ The consensus tool orchestrates multiple AI models to provide diverse perspectiv
 2. **Gather opinions**: Models analyze your proposal from their assigned perspective with built-in common-sense guardrails
 3. **Synthesize results**: Claude combines all perspectives into a balanced recommendation
 4. **Natural language**: Use simple descriptions like "supportive", "critical", or "against" - the tool handles synonyms automatically
+5. **Orchestration signal**: Tool now emits agreement/confidence routing (`majority_synthesis`, `balanced_synthesis`, `dialectical_synthesis`) to guide final synthesis quality
 
 ## Watch In Action
 
@@ -64,6 +65,7 @@ Get a consensus from gemini supporting the idea for implementing X, grok opposin
 - **Unknown stance handling**: Invalid stances automatically default to neutral with warning
 - **Natural language support**: Use terms like "supportive", "critical", "oppose", "favor" - all handled intelligently
 - **Sequential processing**: Reliable execution avoiding MCP protocol issues
+- **Consensus routing signal**: Aggregates model positions, computes agreement ratio/confidence, and recommends synthesis strategy
 - **Focus areas**: Specify particular aspects to emphasize (e.g., 'security', 'performance', 'user experience')
 - **File context support**: Include relevant files for informed decision-making
 - **Image support**: Analyze architectural diagrams, UI mockups, or design documents

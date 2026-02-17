@@ -332,6 +332,40 @@ class TestConsensusTool:
         assert "CRITICAL PERSPECTIVE" in against_prompt
         assert "BALANCED PERSPECTIVE" in neutral_prompt
 
+    def test_infer_position(self):
+        """Position inference should classify supportive/opposing verdicts deterministically."""
+        tool = ConsensusTool()
+
+        assert tool._infer_position("I strongly recommend this approach.", "neutral") == "support"
+        assert tool._infer_position("This is risky and should not be shipped.", "neutral") == "oppose"
+        assert tool._infer_position("Pros and cons are balanced.", "for") == "support"
+        assert tool._infer_position("Pros and cons are balanced.", "against") == "oppose"
+        assert tool._infer_position("", "neutral") == "inconclusive"
+
+    def test_build_consensus_signal_routing(self):
+        """Consensus signal should route synthesis strategy based on agreement confidence."""
+        tool = ConsensusTool()
+
+        high_signal = tool._build_consensus_signal(
+            [
+                {"status": "success", "derived_position": "support"},
+                {"status": "success", "derived_position": "support"},
+                {"status": "success", "derived_position": "support"},
+            ]
+        )
+        assert high_signal["routing_decision"] == "majority_synthesis"
+        assert high_signal["confidence_label"] == "high"
+
+        low_signal = tool._build_consensus_signal(
+            [
+                {"status": "success", "derived_position": "support"},
+                {"status": "success", "derived_position": "oppose"},
+                {"status": "success", "derived_position": "inconclusive"},
+            ]
+        )
+        assert low_signal["routing_decision"] == "dialectical_synthesis"
+        assert low_signal["confidence_label"] == "low"
+
     def test_model_configuration_validation(self):
         """Test model configuration validation."""
         tool = ConsensusTool()
