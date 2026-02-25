@@ -103,6 +103,23 @@
       "intelligence_score": 8
     },
     {
+      "model_name": "google/gemini-3.1-pro-preview",
+      "aliases": [
+        "gemini-3.1",
+        "gemini3.1-openrouter"
+      ],
+      "context_window": 1048576,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "allow_code_generation": true,
+      "description": "Google's Gemini 3.1 Pro via OpenRouter - Next-Gen Agentic. Optimized for tool use, coding agents, and complex problem-solving.",
+      "intelligence_score": 19
+    },
+    {
       "model_name": "google/gemini-3-pro-preview",
       "aliases": [
         "pro",
@@ -119,8 +136,24 @@
       "supports_images": true,
       "max_image_size_mb": 20.0,
       "allow_code_generation": true,
-      "description": "Google's Gemini 3.0 Pro via OpenRouter with vision",
+      "description": "Google's Gemini 3.0 Pro via OpenRouter - Flagship Multimodal Reasoning across text, audio, and video.",
       "intelligence_score": 18
+    },
+    {
+      "model_name": "google/gemini-3-flash-preview",
+      "aliases": [
+        "gemini3-flash",
+        "gemini-3-flash-openrouter"
+      ],
+      "context_window": 1048576,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "description": "Google's Gemini 3.0 Flash via OpenRouter - High-Speed Frontier with near-Pro intelligence at lower latency and cost.",
+      "intelligence_score": 15
     },
     {
       "model_name": "google/gemini-2.5-pro",
@@ -136,8 +169,8 @@
       "supports_images": true,
       "max_image_size_mb": 20.0,
       "allow_code_generation": true,
-      "description": "Google's Gemini 2.5 Pro via OpenRouter with vision",
-      "intelligence_score": 18
+      "description": "Google's Gemini 2.5 Pro via OpenRouter - Production Workhorse for long-context reasoning and document analysis.",
+      "intelligence_score": 16
     },
     {
       "model_name": "google/gemini-2.5-flash",
@@ -152,7 +185,7 @@
       "supports_function_calling": true,
       "supports_images": true,
       "max_image_size_mb": 15.0,
-      "description": "Google's Gemini 2.5 Flash via OpenRouter with vision",
+      "description": "Google's Gemini 2.5 Flash via OpenRouter - Cost/Performance Leader for high-volume tasks and real-time chat.",
       "intelligence_score": 10
     },
     {
@@ -226,92 +259,44 @@
       "intelligence_score": 9
     },
     {
-      "model_name": "openai/o3",
+      "model_name": "openai/gpt-5.2",
       "aliases": [
-        "o3"
+        "gpt5.2",
+        "gpt-5.2",
+        "5.2"
       ],
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
       "supports_json_mode": true,
       "supports_function_calling": true,
       "supports_images": true,
       "max_image_size_mb": 20.0,
-      "supports_temperature": false,
+      "supports_temperature": true,
       "temperature_constraint": "fixed",
-      "description": "OpenAI's o3 model - well-rounded and powerful across domains with vision",
-      "intelligence_score": 14
+      "default_reasoning_effort": "medium",
+      "allow_code_generation": true,
+      "description": "GPT-5.2 via OpenRouter - Frontier Agentic Model for autonomous agents and complex instruction following.",
+      "intelligence_score": 18
     },
     {
-      "model_name": "openai/o3-mini",
+      "model_name": "openai/gpt-5.1",
       "aliases": [
-        "o3-mini",
-        "o3mini"
+        "gpt5.1",
+        "gpt-5.1",
+        "5.1"
       ],
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
       "supports_json_mode": true,
       "supports_function_calling": true,
       "supports_images": true,
       "max_image_size_mb": 20.0,
-      "supports_temperature": false,
+      "supports_temperature": true,
       "temperature_constraint": "fixed",
-      "description": "OpenAI's o3-mini model - balanced performance and speed with vision",
-      "intelligence_score": 12
-    },
-    {
-      "model_name": "openai/o3-mini-high",
-      "aliases": [
-        "o3-mini-high",
-        "o3mini-high"
-      ],
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
-      "supports_json_mode": true,
-      "supports_function_calling": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": false,
-      "temperature_constraint": "fixed",
-      "description": "OpenAI's o3-mini with high reasoning effort - optimized for complex problems with vision",
-      "intelligence_score": 13
-    },
-    {
-      "model_name": "openai/o3-pro",
-      "aliases": [
-        "o3pro"
-      ],
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
-      "supports_json_mode": true,
-      "supports_function_calling": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": false,
-      "temperature_constraint": "fixed",
-      "description": "OpenAI's o3-pro model - professional-grade reasoning and analysis with vision",
-      "intelligence_score": 15
-    },
-    {
-      "model_name": "openai/o4-mini",
-      "aliases": [
-        "o4-mini",
-        "o4mini"
-      ],
-      "context_window": 200000,
-      "max_output_tokens": 100000,
-      "supports_extended_thinking": false,
-      "supports_json_mode": true,
-      "supports_function_calling": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": false,
-      "temperature_constraint": "fixed",
-      "description": "OpenAI's o4-mini model - optimized for shorter contexts with rapid reasoning and vision",
-      "intelligence_score": 11
+      "description": "GPT-5.1 via OpenRouter - Balanced High-Intelligence for general-purpose reasoning, production RAG, and chat.",
+      "intelligence_score": 17
     },
     {
       "model_name": "openai/gpt-5",
@@ -327,7 +312,7 @@
       "max_image_size_mb": 20.0,
       "supports_temperature": true,
       "temperature_constraint": "range",
-      "description": "GPT-5 (400K context, 128K output) - Advanced model with reasoning support",
+      "description": "GPT-5 via OpenRouter - Standard Core Model. Solid baseline for reasoning; stable and widely supported.",
       "intelligence_score": 16
     },
     {
@@ -349,9 +334,154 @@
       "use_openai_response_api": true,
       "default_reasoning_effort": "high",
       "allow_code_generation": true,
-      "description": "GPT-5.2 Pro - Advanced reasoning model with highest quality responses (text+image input, text output only)",
-      "intelligence_score": 18
+      "description": "GPT-5.2 Pro via OpenRouter - Maximum Compute with higher compute-per-token for critical production tasks.",
+      "intelligence_score": 19
     },
+    {
+      "model_name": "openai/gpt-5-pro",
+      "aliases": [
+        "gpt5-pro-legacy",
+        "5-pro"
+      ],
+      "context_window": 400000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": true,
+      "temperature_constraint": "fixed",
+      "use_openai_response_api": true,
+      "default_reasoning_effort": "high",
+      "description": "GPT-5 Pro via OpenRouter - High-Precision Legacy for consistent behavior in established workflows.",
+      "intelligence_score": 17
+    },
+    {
+      "model_name": "openai/o3",
+      "aliases": [
+        "o3"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o3 via OpenRouter - Advanced STEM & Visual Reasoning for math, science, and deep logic.",
+      "intelligence_score": 15
+    },
+    {
+      "model_name": "openai/o3-pro",
+      "aliases": [
+        "o3pro"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o3-pro via OpenRouter - Maximum Intelligence for pure logic, math, and scientific discovery.",
+      "intelligence_score": 17
+    },
+    {
+      "model_name": "openai/o3-mini",
+      "aliases": [
+        "o3-mini",
+        "o3mini"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o3-mini via OpenRouter - Fast & Efficient Reasoning for high-volume logic tasks.",
+      "intelligence_score": 12
+    },
+    {
+      "model_name": "openai/o3-mini-high",
+      "aliases": [
+        "o3-mini-high",
+        "o3mini-high"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o3-mini with high reasoning effort - optimized for complex problems with vision",
+      "intelligence_score": 13
+    },
+    {
+      "model_name": "openai/o4-mini",
+      "aliases": [
+        "o4-mini",
+        "o4mini"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": false,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": true,
+      "max_image_size_mb": 20.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o4-mini via OpenRouter - Ultra-Light Reasoning for simple logic chains and real-time classification.",
+      "intelligence_score": 11
+    },
+    {
+      "model_name": "openai/o3-deep-research",
+      "aliases": [
+        "o3-research",
+        "deep-research"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": false,
+      "max_image_size_mb": 0.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o3 Deep Research via OpenRouter - Autonomous Research agent for comprehensive online information synthesis.",
+      "intelligence_score": 16
+    },
+    {
+      "model_name": "openai/o4-mini-deep-research",
+      "aliases": [
+        "o4-research",
+        "fast-research"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": false,
+      "supports_function_calling": false,
+      "supports_images": false,
+      "max_image_size_mb": 0.0,
+      "supports_temperature": false,
+      "temperature_constraint": "fixed",
+      "description": "OpenAI's o4-mini Deep Research via OpenRouter - Fast Research for quick summaries and targeted information gathering.",
+      "intelligence_score": 13
+    },
+
     {
       "model_name": "openai/gpt-5-codex",
       "aliases": [
@@ -401,30 +531,6 @@
       "temperature_constraint": "fixed",
       "description": "GPT-5 nano (400K context, 128K output) - Fastest, cheapest version of GPT-5 for summarization and classification tasks",
       "intelligence_score": 8
-    },
-    {
-      "model_name": "openai/gpt-5.2",
-      "aliases": [
-        "gpt5.2",
-        "gpt-5.2",
-        "5.2",
-        "gpt5.1",
-        "gpt-5.1",
-        "5.1"
-      ],
-      "context_window": 400000,
-      "max_output_tokens": 128000,
-      "supports_extended_thinking": true,
-      "supports_json_mode": true,
-      "supports_function_calling": true,
-      "supports_images": true,
-      "max_image_size_mb": 20.0,
-      "supports_temperature": true,
-      "temperature_constraint": "fixed",
-      "default_reasoning_effort": "medium",
-      "allow_code_generation": true,
-      "description": "GPT-5.2 (400K context, 128K output) - Flagship reasoning model with configurable thinking effort and vision support",
-      "intelligence_score": 18
     },
     {
       "model_name": "openai/gpt-5.1-codex",
@@ -507,6 +613,94 @@
       "temperature_constraint": "range",
       "description": "xAI's Grok 4.1 Fast Reasoning via OpenRouter (2M context) with vision and advanced reasoning",
       "intelligence_score": 15
+    },
+    {
+      "model_name": "z-ai/glm-5",
+      "aliases": [
+        "glm5",
+        "glm-5-openrouter",
+        "glm-5"
+      ],
+      "context_window": 200000,
+      "max_output_tokens": 128000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "temperature_constraint": "range",
+      "description": "Z.ai's GLM-5 via OpenRouter - Open-Weights Flagship (744B MoE). State-of-the-art on SWE-bench for autonomous coding and complex system design.",
+      "intelligence_score": 19
+    },
+    {
+      "model_name": "z-ai/glm-4.7",
+      "aliases": [
+        "glm4.7",
+        "glm-4.7-openrouter",
+        "glm47"
+      ],
+      "context_window": 203000,
+      "max_output_tokens": 66000,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "temperature_constraint": "range",
+      "description": "Z.ai's GLM-4.7 via OpenRouter - Developer Thinking Model (355B MoE). Exceptional tool-calling for orchestration and agentic code generation.",
+      "intelligence_score": 18
+    },
+    {
+      "model_name": "z-ai/glm-4.7-flash",
+      "aliases": [
+        "glm-4.7-flash",
+        "glm47-flash",
+        "glm-flash"
+      ],
+      "context_window": 203000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "temperature_constraint": "range",
+      "description": "Z.ai's GLM-4.7-Flash via OpenRouter - Fast 30B MoE model optimized for coding and efficiency (59.2% SWE-bench)",
+      "intelligence_score": 14
+    },
+    {
+      "model_name": "z-ai/glm-4.6",
+      "aliases": [
+        "glm4.6",
+        "glm-4.6-openrouter"
+      ],
+      "context_window": 128000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "temperature_constraint": "range",
+      "description": "Z.ai's GLM-4.6 via OpenRouter - High-performance reasoning model",
+      "intelligence_score": 16
+    },
+    {
+      "model_name": "z-ai/glm-4.5",
+      "aliases": [
+        "glm4.5",
+        "glm-4.5-openrouter"
+      ],
+      "context_window": 128000,
+      "max_output_tokens": 65536,
+      "supports_extended_thinking": true,
+      "supports_json_mode": true,
+      "supports_function_calling": true,
+      "supports_images": false,
+      "supports_temperature": true,
+      "temperature_constraint": "range",
+      "description": "Z.ai's GLM-4.5 via OpenRouter - Efficient model with strong coding capabilities",
+      "intelligence_score": 14
     }
   ]
 }
