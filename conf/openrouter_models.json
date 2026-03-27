@@ -105,6 +105,11 @@
     {
       "model_name": "google/gemini-3.1-pro-preview",
       "aliases": [
+        "pro",
+        "gemini-pro",
+        "gemini",
+        "gemini3",
+        "pro-openrouter",
         "gemini-3.1",
         "gemini3.1-openrouter"
       ],
@@ -122,11 +127,7 @@
     {
       "model_name": "google/gemini-3-pro-preview",
       "aliases": [
-        "pro",
-        "gemini-pro",
-        "gemini",
-        "gemini3",
-        "pro-openrouter"
+        "gemini-3-openrouter"
       ],
       "context_window": 1048576,
       "max_output_tokens": 65536,
@@ -136,8 +137,8 @@
       "supports_images": true,
       "max_image_size_mb": 20.0,
       "allow_code_generation": true,
-      "description": "Google's Gemini 3.0 Pro via OpenRouter - Flagship Multimodal Reasoning across text, audio, and video.",
-      "intelligence_score": 18
+      "description": "Google's Gemini 3.0 Pro via OpenRouter - Legacy Gemini 3 preview entry retained for explicit compatibility only.",
+      "intelligence_score": 16
     },
     {
       "model_name": "google/gemini-3-flash-preview",

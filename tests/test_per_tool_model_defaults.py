@@ -77,8 +77,17 @@ class TestToolModelCategories:
 class TestModelSelection:
     """Test model selection based on tool categories."""
 
+    def setup_method(self):
+        """Reset shared caches that can retain environment-driven restrictions."""
+        import utils.model_restrictions
+
+        utils.model_restrictions._restriction_service = None
+
     def teardown_method(self):
         """Clean up after each test to prevent state pollution."""
+        import utils.model_restrictions
+
+        utils.model_restrictions._restriction_service = None
         ModelProviderRegistry.clear_cache()
         # Unregister all providers
         for provider_type in list(ProviderType):
@@ -117,7 +126,7 @@ class TestModelSelection:
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.EXTENDED_REASONING)
             # Gemini should return one of its models for extended reasoning
             # The default behavior may return flash when pro is not explicitly preferred
-            assert model in ["gemini-3.1-pro-preview", "gemini-3-pro-preview", "gemini-2.5-flash", "gemini-2.0-flash"]
+            assert model in ["gemini-3.1-pro-preview", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"]
 
     def test_fast_response_with_openai(self):
         """Test FAST_RESPONSE with OpenAI provider."""
@@ -150,8 +159,7 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model(ToolModelCategory.FAST_RESPONSE)
-            # Gemini should return one of its models for fast response
-            assert model in ["gemini3-flash", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
+            assert model == "gemini-3-flash-preview"
 
     def test_balanced_category_fallback(self):
         """Test BALANCED category uses existing logic."""
@@ -179,8 +187,7 @@ class TestModelSelection:
             ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
 
             model = ModelProviderRegistry.get_preferred_fallback_model()
-            # Should pick the highest-ranked flash model for balanced use
-            assert model == "gemini3-flash"
+            assert model == "gemini-3-flash-preview"
 
 
 class TestFlexibleModelSelection:
@@ -202,7 +209,7 @@ class TestFlexibleModelSelection:
                 "env": {"GEMINI_API_KEY": "test-key"},
                 "provider_type": ProviderType.GOOGLE,
                 "category": ToolModelCategory.FAST_RESPONSE,
-                "expected": "gemini3-flash",
+                "expected": "gemini-3-flash-preview",
             },
             # Case 3: OpenAI provider for fast response
             {

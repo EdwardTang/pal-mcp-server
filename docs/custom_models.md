@@ -57,13 +57,13 @@ The curated defaults in `conf/openrouter_models.json` include popular entries su
 | `opus`, `claude-opus` | `anthropic/claude-opus-4.1` | Flagship Claude reasoning model with vision |
 | `sonnet`, `sonnet4.5` | `anthropic/claude-sonnet-4.5` | Balanced Claude with high context window |
 | `haiku` | `anthropic/claude-3.5-haiku` | Fast Claude option with vision |
-| `pro`, `gemini` | `google/gemini-2.5-pro` | Frontier Gemini with extended thinking |
+| `pro`, `gemini` | `google/gemini-3.1-pro-preview` | Current Gemini Pro preview with extended thinking |
 | `flash` | `google/gemini-2.5-flash` | Ultra-fast Gemini with vision |
 | `mistral` | `mistralai/mistral-large-2411` | Frontier Mistral (text only) |
 | `llama3` | `meta-llama/llama-3-70b` | Large open-weight text model |
 | `deepseek-r1` | `deepseek/deepseek-r1-0528` | DeepSeek reasoning model |
 | `perplexity` | `perplexity/llama-3-sonar-large-32k-online` | Search-augmented model |
-| `gpt5.2`, `gpt-5.2`, `5.2` | `openai/gpt-5.2` | Flagship GPT-5.2 with reasoning and vision |
+| `gpt5.4`, `gpt-5.4`, `5.4` | `openai/gpt-5.4` | Current flagship GPT-5 model for reasoning and coding |
 | `gpt5.1-codex`, `codex-5.1` | `openai/gpt-5.1-codex` | Agentic coding specialization (Responses API) |
 | `codex-mini`, `gpt5.1-codex-mini` | `openai/gpt-5.1-codex-mini` | Cost-efficient Codex variant with streaming |
 
@@ -79,21 +79,22 @@ View the baseline OpenRouter catalogue in [`conf/openrouter_models.json`](conf/o
 
 Native catalogues (`conf/openai_models.json`, `conf/gemini_models.json`, `conf/xai_models.json`, `conf/dial_models.json`) follow the same schema. Updating those files lets you:
 
-- Expose new aliases (e.g., map `enterprise-pro` to `gpt-5.2-pro`)
+- Expose new aliases (e.g., map `enterprise-pro` to `gpt-5.4-pro`)
 - Advertise support for JSON mode or vision if the upstream provider adds it
 - Adjust token limits when providers increase context windows
 
 ### Latest OpenAI releases
 
-OpenAI's November 13, 2025 drop introduced `gpt-5.1-codex` and `gpt-5.1-codex-mini`, while the flagship base model is now `gpt-5.2`. All of these ship in `conf/openai_models.json`:
+OpenAI's current API catalog now centers on `gpt-5.4` as the flagship base model, with `gpt-5.4-pro` for maximum-compute reasoning and the recent Codex line (`gpt-5.2-codex`, `gpt-5.1-codex-max`) for agentic coding. These ship in `conf/openai_models.json`:
 
 | Model | Highlights | Notes |
 |-------|------------|-------|
-| `gpt-5.2` | 400K context, 128K output, multimodal IO, configurable reasoning effort | Streaming enabled; use for balanced agent/coding flows |
-| `gpt-5.1-codex` | Responses-only agentic coding version of GPT-5.1 | Streaming disabled; `use_openai_response_api=true`; `allow_code_generation=true` |
-| `gpt-5.1-codex-mini` | Cost-efficient Codex variant | Streaming enabled, retains 400K context and code-generation flag |
+| `gpt-5.4` | 1.05M context, 128K output, multimodal IO, current flagship | Use for most reasoning and coding tasks |
+| `gpt-5.4-pro` | 1.05M context, 128K output, Responses-only pro tier | Best for hardest multi-step reasoning tasks |
+| `gpt-5.2-codex` | Responses-only coding-optimized GPT-5.2 | Supports streaming plus `low`/`medium`/`high`/`xhigh` reasoning effort |
+| `gpt-5.1-codex-max` | Responses-only long-running Codex variant | Good fit for extended agentic coding sessions |
 
-These entries include pricing-friendly aliases (`gpt5.2`, `codex-5.1`, `codex-mini`) plus updated capability flags (`supports_extended_thinking`, `allow_code_generation`). Copy the manifest if you operate custom deployment names so downstream providers inherit the same metadata.
+These entries include current aliases (`gpt5.4`, `gpt5.4-pro`, `codex-5.2`, `codex-max`) plus updated capability flags (`supports_extended_thinking`, `allow_code_generation`). Copy the manifest if you operate custom deployment names so downstream providers inherit the same metadata.
 
 Because providers load the manifests on import, you can tweak capabilities without touching Python. Restart the server after editing the JSON files so changes are picked up.
 

@@ -514,7 +514,7 @@ DEFAULT_MODEL=auto
 GEMINI_API_KEY=your-key
 OPENAI_API_KEY=your-key
 GOOGLE_ALLOWED_MODELS=pro
-OPENAI_ALLOWED_MODELS=gpt-5.1-codex,gpt-5.2
+OPENAI_ALLOWED_MODELS=gpt-5.1-codex,gpt-5.4
 ```
 
 ### Local-First Setup

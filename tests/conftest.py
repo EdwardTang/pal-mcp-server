@@ -177,7 +177,7 @@ def mock_provider_availability(request, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def clear_model_restriction_env(monkeypatch):
-    """Ensure per-test isolation from user-defined model restriction env vars."""
+    """Ensure per-test isolation from user-defined model restriction and catalog env vars."""
 
     restriction_vars = [
         "OPENAI_ALLOWED_MODELS",
@@ -185,10 +185,29 @@ def clear_model_restriction_env(monkeypatch):
         "XAI_ALLOWED_MODELS",
         "OPENROUTER_ALLOWED_MODELS",
         "DIAL_ALLOWED_MODELS",
+        "CUSTOM_ALLOWED_MODELS",
+        "CUSTOM_MODELS_CONFIG_PATH",
     ]
 
     for var in restriction_vars:
         monkeypatch.delenv(var, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def reset_model_selection_caches():
+    """Clear singleton caches that can retain per-test model policy state."""
+
+    import utils.model_restrictions as model_restrictions
+    from providers.custom import CustomProvider
+
+    model_restrictions._restriction_service = None
+    CustomProvider._registry = None
+
+    try:
+        yield
+    finally:
+        model_restrictions._restriction_service = None
+        CustomProvider._registry = None
 
 
 @pytest.fixture(autouse=True)

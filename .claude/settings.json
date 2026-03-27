@@ -1,7 +1,17 @@
 {
   "permissions": {
-    "allow": [
-    ],
+    "allow": [],
     "deny": []
+  },
+  "mcpServers": {
+    "pal": {
+      "type": "stdio",
+      "command": "/home/etang/gh/qlaw/scripts/run-pal-mcp.sh",
+      "args": [],
+      "env": {
+        "NEW_PAL_CONFIG": "/home/etang/gh/qlaw/.mcp/pal-config.toml",
+        "RUST_LOG": "error"
+      }
+    }
   }
 }

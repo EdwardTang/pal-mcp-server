@@ -173,15 +173,6 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
         # Create contents structure
         contents = [{"parts": parts}]
 
-        # Gemini 3 Pro Preview currently rejects medium thinking budgets; bump to high.
-        effective_thinking_mode = thinking_mode
-        if resolved_model_name == "gemini-3-pro-preview" and thinking_mode == "medium":
-            logger.debug(
-                "Overriding thinking mode 'medium' with 'high' for %s due to launch limitation",
-                resolved_model_name,
-            )
-            effective_thinking_mode = "high"
-
         # Prepare generation config
         generation_config = types.GenerateContentConfig(
             temperature=temperature,
@@ -193,12 +184,12 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
             generation_config.max_output_tokens = max_output_tokens
 
         # Add thinking configuration for models that support it
-        if capabilities.supports_extended_thinking and effective_thinking_mode in self.THINKING_BUDGETS:
+        if capabilities.supports_extended_thinking and thinking_mode in self.THINKING_BUDGETS:
             # Get model's max thinking tokens and calculate actual budget
             model_config = capability_map.get(resolved_model_name)
             if model_config and model_config.max_thinking_tokens > 0:
                 max_thinking_tokens = model_config.max_thinking_tokens
-                actual_thinking_budget = int(max_thinking_tokens * self.THINKING_BUDGETS[effective_thinking_mode])
+                actual_thinking_budget = int(max_thinking_tokens * self.THINKING_BUDGETS[thinking_mode])
                 generation_config.thinking_config = types.ThinkingConfig(thinking_budget=actual_thinking_budget)
 
         # Retry logic with progressive delays
@@ -469,53 +460,91 @@ class GeminiModelProvider(RegistryBackedProviderMixin, ModelProvider):
             return None
 
         capability_map = self.get_all_model_capabilities()
+        allowed_canonical_models: list[str] = []
+        seen: set[str] = set()
 
-        # Helper to find best model from candidates
+        for model_name in allowed_models:
+            resolved = self._resolve_model_name(model_name)
+            if resolved in capability_map and resolved not in seen:
+                allowed_canonical_models.append(resolved)
+                seen.add(resolved)
+
+        def find_preferred(preferences: list[str]) -> Optional[str]:
+            """Return the first canonical model present in the allowed set."""
+            for model_name in preferences:
+                if model_name in seen:
+                    return model_name
+            return None
+
         def find_best(candidates: list[str]) -> Optional[str]:
-            """Return best model from candidates (sorted for consistency)."""
-            return sorted(candidates, reverse=True)[0] if candidates else None
+            """Return the strongest canonical model from candidates by capability rank."""
+            if not candidates:
+                return None
+
+            def rank_key(model_name: str) -> tuple[int, str]:
+                capability = capability_map[model_name]
+                return (capability.get_effective_capability_rank(), model_name)
+
+            return max(candidates, key=rank_key)
 
         if category == ToolModelCategory.EXTENDED_REASONING:
-            # For extended reasoning, prefer models with thinking support
-            # First try Pro models that support thinking
-            pro_thinking = [
-                m
-                for m in allowed_models
-                if "pro" in m and m in capability_map and capability_map[m].supports_extended_thinking
-            ]
-            if pro_thinking:
-                return find_best(pro_thinking)
+            preferred = find_preferred(
+                [
+                    "gemini-3.1-pro-preview",
+                    "gemini-2.5-pro",
+                    "gemini-3-flash-preview",
+                    "gemini-3.1-flash-lite-preview",
+                    "gemini-2.5-flash",
+                    "gemini-2.0-flash",
+                    "gemini-2.5-flash-lite",
+                    "gemini-2.0-flash-lite",
+                ]
+            )
+            if preferred:
+                return preferred
 
-            # Then any model that supports thinking
-            any_thinking = [
-                m for m in allowed_models if m in capability_map and capability_map[m].supports_extended_thinking
+            thinking_models = [
+                model_name
+                for model_name in allowed_canonical_models
+                if capability_map[model_name].supports_extended_thinking
             ]
-            if any_thinking:
-                return find_best(any_thinking)
-
-            # Finally, just prefer Pro models even without thinking
-            pro_models = [m for m in allowed_models if "pro" in m]
-            if pro_models:
-                return find_best(pro_models)
+            if thinking_models:
+                return find_best(thinking_models)
 
         elif category == ToolModelCategory.FAST_RESPONSE:
-            # Prefer Flash models for speed
-            flash_models = [m for m in allowed_models if "flash" in m]
-            if flash_models:
-                return find_best(flash_models)
+            preferred = find_preferred(
+                [
+                    "gemini-3-flash-preview",
+                    "gemini-2.5-flash",
+                    "gemini-2.0-flash",
+                    "gemini-3.1-flash-lite-preview",
+                    "gemini-2.5-flash-lite",
+                    "gemini-2.0-flash-lite",
+                    "gemini-2.5-pro",
+                    "gemini-3.1-pro-preview",
+                ]
+            )
+            if preferred:
+                return preferred
 
         # Default for BALANCED or as fallback
-        # Prefer Flash for balanced use, then Pro, then anything
-        flash_models = [m for m in allowed_models if "flash" in m]
-        if flash_models:
-            return find_best(flash_models)
-
-        pro_models = [m for m in allowed_models if "pro" in m]
-        if pro_models:
-            return find_best(pro_models)
+        preferred = find_preferred(
+            [
+                "gemini-3-flash-preview",
+                "gemini-2.5-flash",
+                "gemini-3.1-pro-preview",
+                "gemini-2.5-pro",
+                "gemini-2.0-flash",
+                "gemini-3.1-flash-lite-preview",
+                "gemini-2.5-flash-lite",
+                "gemini-2.0-flash-lite",
+            ]
+        )
+        if preferred:
+            return preferred
 
         # Ultimate fallback to best available model
-        return find_best(allowed_models)
+        return find_best(allowed_canonical_models)
 
 
 # Load registry data at import time for registry consumers

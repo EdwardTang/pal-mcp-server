@@ -49,9 +49,13 @@ class TestOpenAIProvider:
         assert provider.validate_model_name("o4-mini") is True
         assert provider.validate_model_name("o4-mini") is True
         assert provider.validate_model_name("gpt-5") is True
+        assert provider.validate_model_name("gpt-5.4") is True
+        assert provider.validate_model_name("gpt-5.4-pro") is True
         assert provider.validate_model_name("gpt-5-mini") is True
         assert provider.validate_model_name("gpt-5.2") is True
+        assert provider.validate_model_name("gpt-5.2-codex") is True
         assert provider.validate_model_name("gpt-5.1-codex") is True
+        assert provider.validate_model_name("gpt-5.1-codex-max") is True
         assert provider.validate_model_name("gpt-5.1-codex-mini") is True
 
         # Test valid aliases
@@ -60,11 +64,14 @@ class TestOpenAIProvider:
         assert provider.validate_model_name("o4mini") is True
         assert provider.validate_model_name("o4mini") is True
         assert provider.validate_model_name("gpt5") is True
+        assert provider.validate_model_name("gpt5.4") is True
         assert provider.validate_model_name("gpt5-mini") is True
         assert provider.validate_model_name("gpt5mini") is True
         assert provider.validate_model_name("gpt5.2") is True
+        assert provider.validate_model_name("gpt5.2-codex") is True
         assert provider.validate_model_name("gpt5.1") is True
         assert provider.validate_model_name("gpt5.1-codex") is True
+        assert provider.validate_model_name("codex-max") is True
         assert provider.validate_model_name("codex-mini") is True
 
         # Test invalid model
@@ -82,11 +89,14 @@ class TestOpenAIProvider:
         assert provider._resolve_model_name("o4mini") == "o4-mini"
         assert provider._resolve_model_name("o4mini") == "o4-mini"
         assert provider._resolve_model_name("gpt5") == "gpt-5"
+        assert provider._resolve_model_name("gpt5.4") == "gpt-5.4"
         assert provider._resolve_model_name("gpt5-mini") == "gpt-5-mini"
         assert provider._resolve_model_name("gpt5mini") == "gpt-5-mini"
         assert provider._resolve_model_name("gpt5.2") == "gpt-5.2"
+        assert provider._resolve_model_name("gpt5.2-codex") == "gpt-5.2-codex"
         assert provider._resolve_model_name("gpt5.1") == "gpt-5.1"
         assert provider._resolve_model_name("gpt5.1-codex") == "gpt-5.1-codex"
+        assert provider._resolve_model_name("codex-max") == "gpt-5.1-codex-max"
         assert provider._resolve_model_name("codex-mini") == "gpt-5.1-codex-mini"
 
         # Test full name passthrough
@@ -96,10 +106,13 @@ class TestOpenAIProvider:
         assert provider._resolve_model_name("o4-mini") == "o4-mini"
         assert provider._resolve_model_name("o4-mini") == "o4-mini"
         assert provider._resolve_model_name("gpt-5") == "gpt-5"
+        assert provider._resolve_model_name("gpt-5.4") == "gpt-5.4"
         assert provider._resolve_model_name("gpt-5-mini") == "gpt-5-mini"
         assert provider._resolve_model_name("gpt-5.2") == "gpt-5.2"
+        assert provider._resolve_model_name("gpt-5.2-codex") == "gpt-5.2-codex"
         assert provider._resolve_model_name("gpt-5.1") == "gpt-5.1"
         assert provider._resolve_model_name("gpt-5.1-codex") == "gpt-5.1-codex"
+        assert provider._resolve_model_name("gpt-5.1-codex-max") == "gpt-5.1-codex-max"
         assert provider._resolve_model_name("gpt-5.1-codex-mini") == "gpt-5.1-codex-mini"
 
     def test_get_capabilities_o3(self):

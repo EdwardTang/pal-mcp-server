@@ -2,10 +2,9 @@
   "name": "claude",
   "command": "claude",
   "additional_args": [
-    "--permission-mode",
-    "acceptEdits",
+    "--dangerously-skip-permissions",
     "--model",
-    "sonnet"
+    "opus"
   ],
   "env": {},
   "roles": {

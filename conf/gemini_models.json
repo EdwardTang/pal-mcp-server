@@ -29,34 +29,15 @@
       "model_name": "gemini-3.1-pro-preview",
       "friendly_name": "Gemini Pro 3.1 Preview",
       "aliases": [
+        "pro",
+        "gemini",
+        "gemini3",
+        "gemini-pro",
         "gemini3.1",
         "gemini-3.1"
       ],
       "intelligence_score": 19,
       "description": "Next-Gen Agentic (1M context) - Optimized specifically for tool use, coding agents, and complex problem-solving workflows.",
-      "context_window": 1048576,
-      "max_output_tokens": 65536,
-      "max_thinking_tokens": 32768,
-      "supports_extended_thinking": true,
-      "supports_system_prompts": true,
-      "supports_streaming": true,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_images": true,
-      "supports_temperature": true,
-      "allow_code_generation": true,
-      "max_image_size_mb": 32.0
-    },
-    {
-      "model_name": "gemini-3-pro-preview",
-      "friendly_name": "Gemini Pro 3.0 Preview",
-      "aliases": [
-        "pro",
-        "gemini3",
-        "gemini-pro"
-      ],
-      "intelligence_score": 18,
-      "description": "Flagship Multimodal Reasoning (1M context) - State-of-the-art for reasoning across text, audio, and video; huge context window for massive datasets.",
       "context_window": 1048576,
       "max_output_tokens": 65536,
       "max_thinking_tokens": 32768,
@@ -82,6 +63,28 @@
       "context_window": 1048576,
       "max_output_tokens": 65536,
       "max_thinking_tokens": 24576,
+      "supports_extended_thinking": true,
+      "supports_system_prompts": true,
+      "supports_streaming": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 20.0
+    },
+    {
+      "model_name": "gemini-3.1-flash-lite-preview",
+      "friendly_name": "Gemini Flash-Lite 3.1 Preview",
+      "aliases": [
+        "gemini3.1-flash-lite",
+        "gemini-3.1-flash-lite",
+        "flash-lite-preview"
+      ],
+      "intelligence_score": 13,
+      "description": "Frontier-class flash-lite preview (1M context) - Gemini 3.1's lower-latency, lower-cost preview tuned for agentic and coding workflows.",
+      "context_window": 1048576,
+      "max_output_tokens": 65536,
+      "max_thinking_tokens": 16384,
       "supports_extended_thinking": true,
       "supports_system_prompts": true,
       "supports_streaming": true,
@@ -134,6 +137,28 @@
       "max_image_size_mb": 20.0
     },
     {
+      "model_name": "gemini-2.5-flash-lite",
+      "friendly_name": "Gemini (Flash-Lite 2.5)",
+      "aliases": [
+        "flashlite",
+        "flash-lite",
+        "flash-lite-2.5"
+      ],
+      "intelligence_score": 8,
+      "description": "Gemini 2.5 Flash-Lite (1M context) - Fastest and most budget-friendly multimodal model in the Gemini 2.5 family.",
+      "context_window": 1048576,
+      "max_output_tokens": 65536,
+      "max_thinking_tokens": 16384,
+      "supports_extended_thinking": true,
+      "supports_system_prompts": true,
+      "supports_streaming": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_images": true,
+      "supports_temperature": true,
+      "max_image_size_mb": 20.0
+    },
+    {
       "model_name": "gemini-2.0-flash",
       "friendly_name": "Gemini (Flash 2.0)",
       "aliases": [
@@ -158,8 +183,8 @@
       "model_name": "gemini-2.0-flash-lite",
       "friendly_name": "Gemini (Flash Lite 2.0)",
       "aliases": [
-        "flashlite",
-        "flash-lite"
+        "flashlite-2.0",
+        "flash-lite-2.0"
       ],
       "intelligence_score": 7,
       "description": "Gemini 2.0 Flash Lite (1M context) - Lightweight fast model, text-only",
